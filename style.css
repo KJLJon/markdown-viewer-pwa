@@ -207,6 +207,7 @@ body {
 #file-tree {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 6px 0;
 }
 
@@ -319,17 +320,21 @@ details[open] > summary .chevron {
 }
 
 /* Indentation for nested directories */
+details .tree-dir-label,
+details .tree-file-btn {
+  padding-left: 28px;
+}
 details details .tree-dir-label,
 details details .tree-file-btn {
-  padding-left: 28px;
+  padding-left: 44px;
 }
 details details details .tree-dir-label,
 details details details .tree-file-btn {
-  padding-left: 44px;
+  padding-left: 60px;
 }
 details details details details .tree-dir-label,
 details details details details .tree-file-btn {
-  padding-left: 60px;
+  padding-left: 76px;
 }
 
 /* ============================================================
@@ -429,6 +434,7 @@ details details details details .tree-file-btn {
 #content-wrap {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 }
@@ -471,6 +477,8 @@ details details details details .tree-file-btn {
   color: var(--text);
   line-height: 1.7;
   font-size: 1rem;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .markdown-body h1,
