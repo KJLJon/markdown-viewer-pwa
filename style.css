@@ -355,6 +355,8 @@ details details details details .tree-file-btn {
    ============================================================ */
 #main {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -435,8 +437,8 @@ details details details details .tree-file-btn {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
+  /* plain block — flex containers have scroll bugs on Android Chrome */
+  min-height: 0;
 }
 
 #breadcrumb {
