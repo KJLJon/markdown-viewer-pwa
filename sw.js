@@ -2,7 +2,7 @@
    Markdown Viewer PWA — Service Worker
    ============================================================= */
 
-const CACHE_NAME = 'md-viewer-v1';
+const CACHE_NAME = 'md-viewer-v2';
 
 const PRECACHE = [
   '/markdown-viewer-pwa/',
@@ -40,38 +40,56 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── Fetch: cache-first for precached assets, network-first for others ──
+// ── Fetch ───────────────────────────────────────────────────────
+// Same-origin assets: network-first (fresh when online, cached offline)
+// CDN assets:         cache-first  (version-pinned URLs, safe to cache forever)
 self.addEventListener('fetch', event => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-
-  // Skip non-http(s) requests (e.g. chrome-extension://)
   if (!url.protocol.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+  const isSameOrigin = url.origin === self.location.origin;
+  const isCDN = url.hostname === 'cdn.jsdelivr.net' ||
+                url.hostname === 'cdnjs.cloudflare.com';
 
-      return fetch(event.request).then(response => {
-        // Cache successful responses for same-origin and CDN assets
-        if (response.ok) {
-          const isSameOrigin = url.origin === self.location.origin;
-          const isCDN = url.hostname === 'cdn.jsdelivr.net' ||
-                        url.hostname === 'cdnjs.cloudflare.com';
-          if (isSameOrigin || isCDN) {
+  if (isCDN) {
+    // Cache-first: CDN URLs are versioned, no need to re-fetch
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           }
-        }
-        return response;
-      });
-    }).catch(() => {
-      // Offline fallback: return cached index for navigation requests
-      if (event.request.mode === 'navigate') {
-        return caches.match('/markdown-viewer-pwa/index.html');
-      }
-    })
-  );
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  if (isSameOrigin) {
+    // Network-first: always try to get a fresh copy, fall back to cache offline
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request).then(cached => {
+            if (cached) return cached;
+            // Last-resort offline fallback for navigation
+            if (event.request.mode === 'navigate') {
+              return caches.match('/markdown-viewer-pwa/index.html');
+            }
+          });
+        })
+    );
+  }
 });
