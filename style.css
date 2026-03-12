@@ -57,6 +57,9 @@
   padding: 0;
 }
 
+/* Ensure [hidden] always wins over explicit display rules */
+[hidden] { display: none !important; }
+
 html, body {
   height: 100%;
   overflow: hidden;
