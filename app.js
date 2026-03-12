@@ -54,15 +54,6 @@ function configureMd() {
     breaks: false,
   });
 
-  // Syntax highlighting extension via highlight.js
-  if (window.hljs) {
-    marked.use({
-      extensions: [],
-      walkTokens(token) {
-        // handled in post-render
-      },
-    });
-  }
 }
 
 // ── Theme ──────────────────────────────────────────────────────
@@ -136,6 +127,10 @@ async function loadFromDirectoryHandle(handle) {
   renderFileTree();
   showContent(false);
   els.refreshBtn.hidden = false;
+
+  // On mobile the sidebar is a hidden drawer — open it so the user can see the file list
+  // instead of landing on a blank screen after picking a folder.
+  if (window.innerWidth < 768) openSidebar();
 }
 
 async function scanDirHandle(dirHandle, basePath) {
@@ -176,6 +171,9 @@ function loadFromInput(fileList) {
   renderFileTree();
   showContent(false);
   els.refreshBtn.hidden = true;  // can't refresh input-based
+
+  // On mobile the sidebar is a hidden drawer — open it so the user sees the file list.
+  if (window.innerWidth < 768) openSidebar();
 }
 
 // ── File tree rendering ────────────────────────────────────────
@@ -401,14 +399,18 @@ function init() {
   els.openDirWelcome.addEventListener('click', openDirectory);
 
   els.refreshBtn.addEventListener('click', async () => {
-    if (state.rootHandle) {
+    if (!state.rootHandle || els.refreshBtn.disabled) return;
+    els.refreshBtn.disabled = true;
+    try {
       const prevPath = state.activePath;
       await loadFromDirectoryHandle(state.rootHandle);
       // Re-open the same file if it still exists
       if (prevPath) {
         const entry = state.files.find(f => f.path === prevPath);
-        if (entry) openFile(entry);
+        if (entry) await openFile(entry);
       }
+    } finally {
+      els.refreshBtn.disabled = false;
     }
   });
 

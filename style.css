@@ -211,7 +211,7 @@ body {
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;  /* pan-x lets nested elements scroll horizontally */
   padding: 6px 0;
 }
 
@@ -447,8 +447,9 @@ details details details details .tree-file-btn {
   overflow-y: scroll;          /* scroll (not auto) routes touch reliably on Android */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain; /* prevent scroll from escaping to body */
-  touch-action: pan-y;         /* tell Android Chrome to pan this element vertically */
-  /* plain block — flex containers have scroll bugs on Android Chrome */
+  /* pan-x pan-y: vertical swipes scroll this container; horizontal swipes are
+     allowed to pass through to inner elements (e.g. code blocks with overflow-x) */
+  touch-action: pan-x pan-y;
   min-height: 0;
 }
 
@@ -492,8 +493,6 @@ details details details details .tree-file-btn {
   font-size: 1rem;
   user-select: text;
   -webkit-user-select: text;
-  /* Allow long-press text selection on Android Chrome */
-  touch-action: pan-y;
   cursor: text;
 }
 
@@ -572,6 +571,7 @@ details details details details .tree-file-btn {
   overflow-x: auto;
   margin-bottom: 1.2em;
   line-height: 1.5;
+  touch-action: pan-x pan-y;  /* allow horizontal swipe to scroll wide code blocks */
 }
 
 .markdown-body pre code {
