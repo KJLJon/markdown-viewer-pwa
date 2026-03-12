@@ -351,7 +351,12 @@ details details details details .tree-file-btn {
   background: rgba(0,0,0,0.5);
   z-index: 50;
   opacity: 0;
+  pointer-events: none;  /* don't block touches when invisible */
   transition: opacity var(--transition);
+}
+
+#overlay.visible {
+  pointer-events: auto;  /* only block touches when sidebar is open */
 }
 
 /* ============================================================
